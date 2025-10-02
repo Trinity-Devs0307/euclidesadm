@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel ADM - Gustavo Euclides</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:'Montserrat',sans-serif;
+  background:linear-gradient(135deg,#0f172a,#1e3a8a);
+  color:white;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:20px;
+}
+h1,h2{color:#0ea5e9;text-align:center;margin-bottom:15px;}
+#login,#adminPanel{
+  background: rgba(255,255,255,0.1);
+  padding:25px 20px;
+  border-radius:15px;
+  max-width:400px;
+  width:100%;
+  margin-bottom:20px;
+  box-shadow:0 0 20px rgba(0,0,0,0.4);
+}
+input,select,button{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border:none;
+  border-radius:8px;
+  font-size:1rem;
+}
+input{background: rgba(0,0,0,0.4); color:white;}
+input::placeholder{color:rgba(255,255,255,0.7);}
+button{
+  background:#0ea5e9;color:white;font-weight:600;cursor:pointer;transition:0.3s;
+}
+button:hover{background:#1e40af; transform:scale(1.05);}
+ul{margin-top:15px;list-style:none;}
+li{
+  padding:8px;
+  background: rgba(255,255,255,0.1);
+  margin-bottom:5px;
+  border-radius:6px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+#erro{color:#dc2626;display:none;text-align:center;margin-top:10px;}
+li button{background:#dc2626;padding:4px 8px;cursor:pointer;border-radius:5px;font-size:0.9rem;}
+li button:hover{background:#b91c1c;}
+</style>
+</head>
+<body>
+<h1>Área ADM - Gustavo Euclides</h1>
+
+<div id="login">
+  <h2>Login</h2>
+  <input type="password" id="senha" placeholder="Digite a senha">
+  <button onclick="entrar()">Entrar</button>
+  <p id="erro">Senha incorreta!</p>
+</div>
+
+<div id="adminPanel" style="display:none;">
+  <h2>Agendamentos</h2>
+  <ul id="agendamentos"></ul>
+
+  <h2>Bloquear Horário</h2>
+  <input type="date" id="blockDate">
+  <select id="blockTime"></select>
+  <button onclick="bloquear()">Bloquear Horário</button>
+</div>
+
+<script>
+const loginDiv=document.getElementById("login");
+const adminDiv=document.getElementById("adminPanel");
+const erro=document.getElementById("erro");
+const agendamentosUl=document.getElementById("agendamentos");
+const blockDate=document.getElementById("blockDate");
+const blockTime=document.getElementById("blockTime");
+
+function entrar(){
+  const senha=document.getElementById("senha").value;
+  if(senha==="1234"){
+    loginDiv.style.display="none";
+    adminDiv.style.display="block";
+    carregarAgendamentos();
+  } else erro.style.display="block";
+}
+
+function carregarAgendamentos(){
+  agendamentosUl.innerHTML="";
+  for(let i=0;i<localStorage.length;i++){
+    const key=localStorage.key(i);
+    if(key.startsWith("agendamento_")){
+      const ag=JSON.parse(localStorage.getItem(key));
+      let li=document.createElement("li");
+      li.textContent=`${ag.date} ${ag.time} - ${ag.name} (${ag.phone})`;
+      const btn=document.createElement("button");
+      btn.textContent="Desbloquear";
+      btn.onclick=()=>desbloquear(key);
+      li.appendChild(btn);
+      agendamentosUl.appendChild(li);
+    }
+  }
+}
+
+function gerarHoras(){
+  blockTime.innerHTML="";
+  for(let h=8;h<=20;h++){
+    let option=document.createElement("option");
+    option.value=`${h}:00`;
+    option.textContent=`${h}:00`;
+    blockTime.appendChild(option);
+  }
+}
+
+function bloquear(){
+  const date=blockDate.value;
+  const time=blockTime.value;
+  if(!date||!time)return alert("Selecione data e horário");
+  const key=`${date}_${time}`;
+  localStorage.setItem("bloqueado_"+key,true);
+  alert(`Horário ${time} do dia ${date} bloqueado!`);
+  carregarAgendamentos();
+}
+
+function desbloquear(key){
+  localStorage.removeItem(key);
+  alert("Agendamento desbloqueado, horário disponível!");
+  carregarAgendamentos();
+}
+
+gerarHoras();
+</script>
+</body>
+</html>
